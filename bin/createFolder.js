@@ -12,29 +12,23 @@ function createFolder(folderName) {
 		input: process.stdin,
 		output: process.stdout,
 	});
-	const defaultContent_1 = `extends ../views/layout/_layout.pug
+
+	let content = `extends ../views/layout/_layout.pug
 	\nblock var
 	- var title = ''
 	- var bodyClass = ''
-	\nblock main
-	include ../components/Pages/${folderName}/${folderName}
-	`;
-	const defaultContent_2 = type => {
-		return `extends ../views/layout/_layout.pug
-	\nblock var
-	- var title = ''
-	- var bodyClass = ''
-	\nblock main
-	include ../components/Pages/${folderName}/${type}/${folderName}
-	`;
+	\nblock main`;
+
+	const defaultContent_1 = folderName => {
+		content += `\n\tinclude ../components/Pages/${folderName}/${folderName}`;
+		return content;
+	};
+	const defaultContent_2 = (folderName, type) => {
+		let mergeContent = '';
+		mergeContent = `${content}\n\tinclude ../components/Pages/${folderName}/${type}/${folderName}${type}`;
+		return mergeContent;
 	};
 	const defaultContent_3 = numSections => {
-		let content = `extends ../views/layout/_layout.pug
-		\nblock var
-		- var title = ''
-		- var bodyClass = ''
-		\nblock main`;
-
 		for (let i = 1; i <= numSections; i++) {
 			content += `\n\tinclude ../components/Pages/${folderName}/${folderName}-${i}/${folderName}-${i}`;
 		}
@@ -76,7 +70,10 @@ function createFolder(folderName) {
 	rl.on('line', answer => {
 		if (answer === '1') {
 			// Create initial file
-			fs.writeFileSync(`${initialFile}/${folderName}.pug`, defaultContent_1);
+			fs.writeFileSync(
+				`${initialFile}/${folderName}.pug`,
+				defaultContent_1(folderName)
+			);
 			fs.mkdirSync(defaultPath);
 			fs.writeFileSync(`${defaultPath}/${folderName}.pug`, '');
 			fs.writeFileSync(`${defaultPath}/${folderName}.sass`, '');
@@ -85,11 +82,11 @@ function createFolder(folderName) {
 			// Create initial file
 			fs.writeFileSync(
 				`${initialFile}/${folderName}List.pug`,
-				defaultContent_2('List')
+				defaultContent_2(folderName, 'List')
 			);
 			fs.writeFileSync(
 				`${initialFile}/${folderName}Detail.pug`,
-				defaultContent_2('Detail')
+				defaultContent_2(folderName, 'Detail')
 			);
 			fs.mkdirSync(defaultPath);
 			fs.mkdirSync(`${defaultPath}/List`);
