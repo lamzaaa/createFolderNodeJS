@@ -4,7 +4,8 @@
   "description": "Shorthand to create Folders and Files",
   "main": "index.js",
   "bin": {
-    "createFolder": "./bin/createFolder.js"
+    "createFolder": "./bin/createFolder.js",
+    "createInlineFolder": "./bin/createInlineFolder.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -13,6 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "cli-color": "^2.0.3",
+    "inquirer": "^8.2.5",
     "lodash": "^4.17.21",
     "request": "^2.88.2"
   }
