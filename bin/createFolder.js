@@ -5,8 +5,13 @@ const fs = require('fs');
 const clc = require('cli-color');
 const inquirer = require('inquirer');
 const ui = new inquirer.ui.BottomBar();
+const clipboardy = require('clipboardy');
 
 function createInlineFolder(folderName) {
+	if (folderName === undefined || folderName === null) {
+		ui.log.write(clc.xterm(204)('Please enter Folder name **'));
+		process.exit(1);
+	}
 	const defaultPath = `./src/components/Pages/${folderName}`;
 	const initialFile = `./src/Public`;
 	let content = `extends ../views/layout/_layout.pug
@@ -30,6 +35,24 @@ function createInlineFolder(folderName) {
 		}
 		return content;
 	};
+
+	function completeOutput(options) {
+		process.stdout.write(clc.move.down(1));
+		if (options.length === 1) {
+			ui.log.write(`Page 1 ~> ${clc.xterm(45)(options[0])}`);
+			clipboardy.writeSync(options[0]);
+			ui.log.write(`"${clc.xterm(4)(options[0])}" copied to clipboard`);
+		} else {
+			const clipboardText = options.join('\n');
+			clipboardy.writeSync(clipboardText);
+			options.forEach((option, index) => {
+				ui.log.write(`Page ${index + 1} ~> ${clc.xterm(45)(option)}`);
+				ui.log.write(`--> ${clc.xterm(4)(option)} copied to clipboard`);
+				if (index !== options.length - 1) ui.log.write('\n');
+			});
+		}
+	}
+
 	const question = [
 		{
 			name:
@@ -89,6 +112,7 @@ function createInlineFolder(folderName) {
 				fs.mkdirSync(defaultPath);
 				fs.writeFileSync(`${defaultPath}/${folderName}.pug`, '');
 				fs.writeFileSync(`${defaultPath}/${folderName}.sass`, '');
+				completeOutput([`${folderName}.html`]);
 			} else if (answers.option === 2) {
 				// Create initial file
 				fs.writeFileSync(
@@ -99,6 +123,8 @@ function createInlineFolder(folderName) {
 					`${initialFile}/${folderName}Detail.pug`,
 					defaultContent_2(folderName, 'Detail')
 				);
+				completeOutput([`${folderName}List.html`, `${folderName}Detail.html`]);
+
 				fs.mkdirSync(defaultPath);
 				fs.mkdirSync(`${defaultPath}/List`);
 				fs.writeFileSync(`${defaultPath}/List/${folderName}List.pug`, '');
@@ -124,6 +150,7 @@ function createInlineFolder(folderName) {
 							defaultContent_3(numberOfSections.value)
 						);
 						fs.mkdirSync(defaultPath);
+						completeOutput([`${folderName}.html`]);
 						if (isNaN(numSections)) {
 							console.log(
 								clc.redBright('Invalid input. Please enter a valid number.')
@@ -139,7 +166,10 @@ function createInlineFolder(folderName) {
 						}
 					});
 			}
-			if (answers.option !== 3) ui.log.write('Creating files');
+			if (answers.option > 3) {
+				console.log(answers.option);
+				ui.log.write(clc.xterm(204)('Please chose again'));
+			}
 		})
 		.catch(error => {
 			console.log(error);
